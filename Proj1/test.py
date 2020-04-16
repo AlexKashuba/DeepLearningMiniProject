@@ -76,8 +76,8 @@ class Model(nn.Module):
         self.weight_sharing = weight_sharing
         if not weight_sharing:
             self.right = DigitSubnetwork()
-        self.fc = nn.Linear(20, 10)
-        self.fc2 = nn.Linear(10, 2)
+        self.fc = nn.Linear(20, 100)
+        self.fc2 = nn.Linear(100, 2)
         self.left_out = None
         self.right_out = None
 
@@ -109,7 +109,7 @@ def scatter(_input):
 
 
 if __name__ == "__main__":
-    model = Model(weight_sharing=False)
+    model = Model(weight_sharing=True)
     
     train_input, train_target, train_classes, test_input, test_target, test_classes = \
         prologue.generate_pair_sets(N_PAIRS)
