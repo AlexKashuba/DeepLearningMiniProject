@@ -9,6 +9,11 @@ EPOCHS = 25
 LEFT = 0
 RIGHT = 1
 
+#TODO: add comments
+#TODO: average over multiple runs
+#TODO: normalize?
+#TODO: perf?
+
 def train_model(model, train_input, train_target, train_classes=None):
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters())
@@ -76,8 +81,8 @@ class Model(nn.Module):
         self.weight_sharing = weight_sharing
         if not weight_sharing:
             self.right = DigitSubnetwork()
-        self.fc = nn.Linear(20, 100)
-        self.fc2 = nn.Linear(100, 2)
+        self.fc = nn.Linear(20, 200)
+        self.fc2 = nn.Linear(200, 2)
         self.left_out = None
         self.right_out = None
 
@@ -100,12 +105,6 @@ class Model(nn.Module):
         x = F.relu(x)
         x = self.fc2(x)
         return x
-
-def scatter(_input):
-    n = _input.shape[0]
-    z = torch.zeros(n, 2)
-    z.scatter_(1, _input.view(-1, 1), torch.ones(n, 1))
-    return z
 
 
 if __name__ == "__main__":
