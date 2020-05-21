@@ -28,7 +28,7 @@ class Linear(Module):
         self._input = None
         self.in_features = in_features
         self.hidden_units = hidden_units
-        n = 1/sqrt(in_features)
+        #n = 1/sqrt(in_features)
         #self.weights = empty(hidden_units, in_features).uniform_(-n, n)
         self.weights = xavier_normal_(torch.empty(self.hidden_units, self.in_features))
         self.grad_w = empty(self.weights.size()).zero_()
@@ -64,6 +64,23 @@ class Tanh(Module):
 
     def __derivative(self):
         return 4 * (self._input[0].exp() + self._input[0].mul(-1).exp()).pow(-2)
+
+    def backward(self, *gradwrtoutput):
+        return self.__derivative() * gradwrtoutput[0]
+
+    def param(self):
+        return []
+
+class Sigmoid(Module):
+    def __init__(self):
+        self._input = None
+
+    def forward(self, *_input):
+        self._input = _input
+        return (_input[0].sigmoid(),)
+
+    def __derivative(self):
+        return self._input[0].sigmoid()*(1-self._input[0].sigmoid())
 
     def backward(self, *gradwrtoutput):
         return self.__derivative() * gradwrtoutput[0]
