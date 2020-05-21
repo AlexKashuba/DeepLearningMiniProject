@@ -28,12 +28,10 @@ class Linear(Module):
         self._input = None
         self.in_features = in_features
         self.hidden_units = hidden_units
-        #n = 1/sqrt(in_features)
-        #self.weights = empty(hidden_units, in_features).uniform_(-n, n)
-        self.weights = xavier_normal_(torch.empty(self.hidden_units, self.in_features))
+        xavier_init = sqrt(6/(in_features + hidden_units))
+        self.weights = empty(hidden_units, in_features).uniform_(-xavier_init, xavier_init)
         self.grad_w = empty(self.weights.size()).zero_()
         self.bias = torch.empty(self.hidden_units).normal_(0, 1e-3)
-        #self.bias = empty(hidden_units).uniform_(-n ,n)
         self.grad_b = empty(self.bias.size()).zero_()
 
     def forward(self, *_input):

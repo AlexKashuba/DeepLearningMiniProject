@@ -14,6 +14,7 @@ if __name__ == "__main__":
     from math import sqrt
     from torch import tensor
 
+    torch.manual_seed(5)
     def correct_prediction(output, label):
         _, predicted = output[0].max(1)
         _, real = label.max(1)
@@ -29,17 +30,17 @@ if __name__ == "__main__":
 
     model = Sequential(
         Linear(2, 25),
-        ReLU(),
+        Tanh(),
         Linear(25, 25),
         ReLU(),
         Linear(25, 25),
         Tanh(),
         Linear(25, 2),
-        ReLU())
+        Sigmoid())
 
 
     loss = LossMSE()
-
+    optimizer = SGD(model, lr=1e-3)
 
     for e in range(epochs):
         sum_loss = 0
@@ -51,9 +52,7 @@ if __name__ == "__main__":
             loss_val = loss.forward(*output, train_labels.narrow(0, i, mini_batch_size))[0]
             model.backward(loss.backward())
             sum_loss = sum_loss + loss_val
-
-            for p in model.param():
-                p[0] -= eta * p[1]
+            optimizer.step()
 
             model.zero_grad()
 
