@@ -29,14 +29,3 @@ def generate_circle_data(N_POINTS):
 
         labels = tensor(labels)
         return points, labels
-
-class SGD(object):
-
-    def __init__(self, model, lr):
-        super(SGD, self).__init__()
-        self.model = model
-        self.lr = lr
-
-    def step(self):
-        for p in self.model.param():
-            p[0] -= self.lr * p[1]

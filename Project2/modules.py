@@ -23,8 +23,7 @@ class Module(object):
 
 
 class Linear(Module):
-    def __init__(self, in_features, hidden_units, name=None):
-        self.name = name
+    def __init__(self, in_features, hidden_units):
         self._input = None
         self.in_features = in_features
         self.hidden_units = hidden_units
@@ -35,8 +34,6 @@ class Linear(Module):
         self.grad_b = empty(self.bias.size()).zero_()
 
     def forward(self, *_input):
-        if self.name:
-            print("Layer: {}".format(self.name))
         self._input = _input[0]
         res = (self._input.mm(self.weights.T) + self.bias, )
         return res

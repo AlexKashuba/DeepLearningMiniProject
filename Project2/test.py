@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
 
     loss = LossMSE()
-    optimizer = SGD(model, lr=1e-3)
+    optimizer = Adam(model.param(), lr=1e-3)
 
     for e in range(epochs):
         sum_loss = 0
