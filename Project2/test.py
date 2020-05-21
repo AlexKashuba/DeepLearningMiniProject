@@ -7,6 +7,7 @@ import torch
 set_grad_enabled(False)
 from modules import *
 from helpers import *
+from optimizer import *
 
 
 if __name__ == "__main__":
@@ -41,6 +42,7 @@ if __name__ == "__main__":
 
     loss = LossMSE()
     optimizer = Adam(model.param(), lr=1e-3)
+    #optimizer = SGD(model.param(), lr=1e-3)
 
     for e in range(epochs):
         sum_loss = 0

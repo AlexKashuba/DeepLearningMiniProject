@@ -1,5 +1,4 @@
 import torch
-from math import sqrt
 
 class Optimizer(object):
 
@@ -25,17 +24,17 @@ class Adam(Optimizer):
         self.beta2 = beta2
         self.epsilon = epsilon
         self.m = None
-        self.r = None
+        self.v = None
 
     def step(self):
         if self.m is None:
             self.m = [torch.zeros(param[0].shape) for param in self.params]
-        if self.r is None:
-            self.r = [torch.zeros(param[0].shape) for param in self.params]
+        if self.v is None:
+            self.v = [torch.zeros(param[0].shape) for param in self.params]
 
         for i, param in enumerate(self.params):
             self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * param[1]
-            self.r[i] = self.beta2 * self.r[i]  + (1 - self.beta2) * param[1] * param[1]
+            self.v[i] = self.beta2 * self.v[i]  + (1 - self.beta2) * param[1] * param[1]
             m_corr = self.m[i] / (1 - self.beta1)
-            r_corr = self.r[i] / (1 - self.beta2)
-            param[0] -= self.lr * m_corr/(sqrt(r_corr) + self.epsilon)
+            v_corr = self.v[i] / (1 - self.beta2)
+            param[0] -= self.lr * m_corr/((v_corr.sqrt()) + self.epsilon)
