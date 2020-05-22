@@ -1,36 +1,52 @@
 from torch import empty
 from torch import set_grad_enabled
 
-# remove before submission
-from torch import float64
-import torch
 from math import sqrt
 set_grad_enabled(False)
-from torch.nn.init import xavier_normal_, xavier_normal
-
 
 
 class Module(object):
+    """A base class for all modules"""
 
     def forward(self, *_input):
+        """Apply the module
+            Arguments:
+                _input: input tensor(s)
+            Result: tuple of tensors 
+        """
         raise NotImplementedError
 
     def backward(self, *gradwrtoutput):
+        """Return a tensor containing the gradient of the loss
+            wrt the module's input and accumulate the gradient wrt the parameters
+            Arguments:
+                gradwrtoutput: tensor with the upstream gradient
+        """
         raise NotImplementedError
 
     def param(self):
+        """
+        Return a list of tuples of the format (param, gradient)
+        """
         return []
 
 
 class Linear(Module):
+    """
+        A simple linear layer applying a transformation of the form w*x + b
+    """
+    MAX_INITIAL_BIAS = 1e-3
+
     def __init__(self, in_features, hidden_units):
         self._input = None
         self.in_features = in_features
         self.hidden_units = hidden_units
         xavier_init = sqrt(6/(in_features + hidden_units))
-        self.weights = empty(hidden_units, in_features).uniform_(-xavier_init, xavier_init)
+        self.weights = empty(
+            hidden_units, in_features).uniform_(-xavier_init, xavier_init)
         self.grad_w = empty(self.weights.size()).zero_()
-        self.bias = torch.empty(self.hidden_units).normal_(0, 1e-3)
+        self.bias = empty(self.hidden_units).normal_(
+            0, Linear.MAX_INITIAL_BIAS)
         self.grad_b = empty(self.bias.size()).zero_()
 
     def forward(self, *_input):
@@ -50,6 +66,8 @@ class Linear(Module):
 
 
 class Tanh(Module):
+    """Tanh activation function"""
+
     def __init__(self):
         self._input = None
 
@@ -66,7 +84,10 @@ class Tanh(Module):
     def param(self):
         return []
 
+
 class Sigmoid(Module):
+    """Sigmoid activation function"""
+
     def __init__(self):
         self._input = None
 
@@ -83,19 +104,24 @@ class Sigmoid(Module):
     def param(self):
         return []
 
+
 class ReLU(Module):
+    """ReLU activation function"""
+
     def __init__(self):
         self._input = None
         self.target = None
 
     def forward(self, *_input):
         self._input = _input
-        return (torch.max(torch.tensor(0.0), _input[0]), )
+        out = _input[0].clone()
+        out[out < 0] = 0
+        return (out, )
 
     def _derivative(self):
         t = self._input[0].clone()
-        t[t<=0] = 0
-        t[t>0] = 1
+        t[t <= 0] = 0
+        t[t > 0] = 1
         return t
 
     def backward(self, *gradwrtoutput):
@@ -104,7 +130,9 @@ class ReLU(Module):
     def param(self):
         return[]
 
+
 class LossMSE(Module):
+    """A Module for Mean Squared Error Loss"""
     def __init__(self):
         self._input = None
         self.target = None
@@ -112,17 +140,19 @@ class LossMSE(Module):
     def forward(self, *_input):
         self._input = _input[0]
         self.target = _input[1]
-        res = (self._input - self.target).pow(2).sum()
+        res = (self._input - self.target).pow(2).mean()
         return (res, )
 
     def backward(self, *gradwrtoutput):
-        return 2 * (self._input - self.target)
+        return 2 * (self._input - self.target) / self._input[0].size()[0]
 
     def param(self):
         return []
 
 
 class Sequential(Module):
+    """A Module to combine multiple modules into a sequential graph"""
+
     def __init__(self, *modules):
         self.modules = modules
 
@@ -145,6 +175,9 @@ class Sequential(Module):
         return [p for module in self.modules for p in module.param()]
 
     def zero_grad(self):
+        """
+            Reset the gradients of all layers to zero
+        """
         for module in self.modules:
             for p in module.param():
                 p[1].zero_()

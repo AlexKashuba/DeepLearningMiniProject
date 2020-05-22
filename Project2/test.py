@@ -1,57 +1,31 @@
-from torch import empty
 from torch import set_grad_enabled
+from torch import manual_seed
 
-# remove before submission
-from torch import float64
-import torch
-set_grad_enabled(False)
-from modules import *
-from helpers import *
 from optimizer import *
+from helpers import *
+from modules import *
+
+set_grad_enabled(False)
+
+LEARNING_RATE = 1e-3
+EPOCHS = 100
+MINI_BATCH_SIZE = 50
+N_POINTS = 1000
 
 
-if __name__ == "__main__":
-    from math import pi
-    from math import sqrt
-    from torch import tensor
-
-    torch.manual_seed(5)
-    def correct_prediction(output, label):
-        _, predicted = output[0].max(1)
-        _, real = label.max(1)
-        return (predicted - real).abs().sum()
-
-    eta = 1e-3
-    epochs = 100
-    mini_batch_size = 50
-    N_POINTS = 1000
-
-    train_input, train_labels = generate_circle_data(N_POINTS)
-    test_input, test_labels = generate_circle_data(N_POINTS)
-
-    model = Sequential(
-        Linear(2, 25),
-        Tanh(),
-        Linear(25, 25),
-        ReLU(),
-        Linear(25, 25),
-        Tanh(),
-        Linear(25, 2),
-        Sigmoid())
-
-
+def train_model(model, train_input, train_labels, test_input, test_labels, optimizer):
     loss = LossMSE()
-    optimizer = Adam(model.param(), lr=1e-3)
-    #optimizer = SGD(model.param(), lr=1e-3)
 
-    for e in range(epochs):
+    for e in range(EPOCHS):
         sum_loss = 0
         errors = 0
 
-        for i in range(0, N_POINTS, mini_batch_size):
-            output = model.forward(train_input.narrow(0, i, mini_batch_size))
-            errors += correct_prediction(output, train_labels.narrow(0, i, mini_batch_size)).item()
-            loss_val = loss.forward(*output, train_labels.narrow(0, i, mini_batch_size))[0]
+        for i in range(0, N_POINTS, MINI_BATCH_SIZE):
+            output = model.forward(train_input.narrow(0, i, MINI_BATCH_SIZE))
+            errors += nb_errors(output, train_labels.narrow(0,
+                                                            i, MINI_BATCH_SIZE)).item()
+            loss_val = loss.forward(
+                *output, train_labels.narrow(0, i, MINI_BATCH_SIZE))[0]
             model.backward(loss.backward())
             sum_loss = sum_loss + loss_val
             optimizer.step()
@@ -63,11 +37,52 @@ if __name__ == "__main__":
 
     sum_loss = 0
     errors = 0
-    mini_batch_sizet = 50
-    for i in range(0, N_POINTS, mini_batch_size):
-        output = model.forward(test_input.narrow(0, i, mini_batch_size), test_labels[i])
-        loss_val = loss.forward(*output, test_labels.narrow(0, i, mini_batch_size))[0]
-        errors += correct_prediction(output, test_labels.narrow(0, i, mini_batch_size))
+
+    for i in range(0, N_POINTS, MINI_BATCH_SIZE):
+        output = model.forward(test_input.narrow(
+            0, i, MINI_BATCH_SIZE), test_labels[i])
+        loss_val = loss.forward(
+            *output, test_labels.narrow(0, i, MINI_BATCH_SIZE))[0]
+        errors += nb_errors(output, test_labels.narrow(0, i, MINI_BATCH_SIZE))
         sum_loss = sum_loss + loss_val
 
-    print("test loss: {}, test acc: {}".format(sum_loss, 1 - float(errors)/N_POINTS))
+    print("######################################################\n")
+    test_acc = 1 - float(errors)/N_POINTS
+    print("Test loss: {}, test acc: {}".format(
+        sum_loss, test_acc))
+        
+    return test_acc
+
+
+def experiments():
+    models = [
+        Sequential(
+            Linear(2, 25),
+            ReLU(),
+            Linear(25, 25),
+            ReLU(),
+            Linear(25, 25),
+            ReLU(),
+            Linear(25, 2),
+            ReLU()),
+    ]
+
+
+if __name__ == "__main__":
+    manual_seed(5)
+
+    model = Sequential(
+        Linear(2, 25),
+        ReLU(),
+        Linear(25, 25),
+        ReLU(),
+        Linear(25, 25),
+        ReLU(),
+        Linear(25, 2),
+        ReLU())
+
+    train_input, train_labels = generate_circle_data(N_POINTS)
+    test_input, test_labels = generate_circle_data(N_POINTS)
+    optimizer = Adam(model.param(), lr=LEARNING_RATE)
+    train_model(model, train_input, train_labels,
+                test_input, test_labels, optimizer)
