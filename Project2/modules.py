@@ -35,7 +35,7 @@ class Linear(Module):
     """
         A simple linear layer applying a transformation of the form w*x + b
     """
-    MAX_INITIAL_BIAS = 1e-3
+    BIAS_STD = 1e-3
 
     def __init__(self, in_features, hidden_units):
         self._input = None
@@ -46,7 +46,7 @@ class Linear(Module):
             hidden_units, in_features).uniform_(-xavier_init, xavier_init)
         self.grad_w = empty(self.weights.size()).zero_()
         self.bias = empty(self.hidden_units).normal_(
-            0, Linear.MAX_INITIAL_BIAS)
+            0, Linear.BIAS_STD)
         self.grad_b = empty(self.bias.size()).zero_()
 
     def forward(self, *_input):
@@ -133,6 +133,7 @@ class ReLU(Module):
 
 class LossMSE(Module):
     """A Module for Mean Squared Error Loss"""
+
     def __init__(self):
         self._input = None
         self.target = None
