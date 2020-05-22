@@ -22,7 +22,7 @@ if __name__ == "__main__":
         return (predicted - real).abs().sum()
 
     eta = 1e-3
-    epochs = 500
+    epochs = 100
     mini_batch_size = 50
     N_POINTS = 1000
 

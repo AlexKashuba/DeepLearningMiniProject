@@ -34,7 +34,7 @@ class Adam(Optimizer):
 
         for i, param in enumerate(self.params):
             self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * param[1]
-            self.v[i] = self.beta2 * self.v[i]  + (1 - self.beta2) * param[1] * param[1]
-            m_corr = self.m[i] / (1 - self.beta1)
-            v_corr = self.v[i] / (1 - self.beta2)
-            param[0] -= self.lr * m_corr/((v_corr.sqrt()) + self.epsilon)
+            self.v[i] = self.beta2 * self.v[i]  + (1 - self.beta2) * (param[1]**2)
+            m_hat = self.m[i] / (1 - self.beta1)
+            v_hat = self.v[i] / (1 - self.beta2)
+            param[0] -= self.lr * m_hat/((v_hat.sqrt()) + self.epsilon)
