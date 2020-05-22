@@ -97,4 +97,5 @@ def get_results(n_pairs=1000, rounds=10):
 
     return results
 
+torch.manual_seed(5)
 test_results = get_results()
