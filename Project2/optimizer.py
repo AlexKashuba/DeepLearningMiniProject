@@ -25,6 +25,8 @@ class Adam(Optimizer):
         self.epsilon = epsilon
         self.m = None
         self.v = None
+        self.t = 1
+        
 
     def step(self):
         if self.m is None:
@@ -35,6 +37,9 @@ class Adam(Optimizer):
         for i, param in enumerate(self.params):
             self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * param[1]
             self.v[i] = self.beta2 * self.v[i]  + (1 - self.beta2) * (param[1]**2)
-            m_hat = self.m[i] / (1 - self.beta1)
-            v_hat = self.v[i] / (1 - self.beta2)
+            m_hat = self.m[i] / (1 - self.beta1**self.t)
+            v_hat = self.v[i] / (1 - self.beta2**self.t)
             param[0] -= self.lr * m_hat/((v_hat.sqrt()) + self.epsilon)
+        
+        self.t += 1
+    
