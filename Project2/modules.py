@@ -112,7 +112,7 @@ class LossMSE(Module):
     def forward(self, *_input):
         self._input = _input[0]
         self.target = _input[1]
-        res = ((self._input - self.target).pow(2).sum(1).mean())
+        res = (self._input - self.target).pow(2).sum()
         return (res, )
 
     def backward(self, *gradwrtoutput):
